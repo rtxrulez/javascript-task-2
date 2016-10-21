@@ -7,6 +7,36 @@
 exports.isStar = true;
 
 /**
+* Переобразуем телефон в международный формат
+* @param {string}
+*/
+function phoneFormat(phone) {
+    if (phone.length == 10 && /\d{10}/.test(phone)) {
+        return '+7 (' + phone.substr(0, 3) + ') ' + phone.substr(3, 3) + '-' + phone.substr(6, 2) + '-' + phone.substr(8);
+    } else {
+        return false;
+    }
+}
+
+/**
+* Ищет пользователей в объекте и возвращает массив с номерами
+* @param {string}
+*/
+function findInContactList(query) {
+    var findPhoneBook = [];
+    query = query.toLowerCase();
+    for(var key in phoneBook) {
+        var keyLow = key.toLowerCase();
+        var nameLow = phoneBook[key]['name'].toLowerCase();
+        var emailLow = phoneBook[key]['email'].toLowerCase();
+        if('*' == query || keyLow.indexOf(query) >= 0 || nameLow.indexOf(query) >= 0 || emailLow.indexOf(query) >= 0) {
+            findPhoneBook.push(key);
+        }
+    }
+    return findPhoneBook;
+}
+
+/**
  * Телефонная книга
  */
 var phoneBook = {};
@@ -49,6 +79,8 @@ exports.update = function (phone, name, email) {
 
         if (typeof email != 'undefined') {
             phoneBook[phone]['email'] = email;
+        } else {
+            phoneBook[phone]['email'] = '';
         }
         console.log('update ', phoneBook[phone]['name']);
     } else {
@@ -61,7 +93,12 @@ exports.update = function (phone, name, email) {
  * @param {String} query
  */
 exports.findAndRemove = function (query) {
-
+    var usersArray = findInContactList(query);
+    for (var i=0; i<usersArray.length; i++) {
+        var phone = usersArray[i];
+        console.log('phone', phone);
+        delete phoneBook[phone];
+    }
 };
 
 /**
@@ -69,22 +106,21 @@ exports.findAndRemove = function (query) {
  * @param {String} query
  */
 exports.find = function (query) {
-    var findPhoneBook = {};
-    query = query.toLowerCase();
-    for(var key in phoneBook) {
-        var keyLow = key.toLowerCase();
-        var nameLow = phoneBook[key]['name'].toLowerCase();
-        var emailLow = phoneBook[key]['email'].toLowerCase();
-        if(keyLow.indexOf(query) >= 0 || nameLow.indexOf(query) >= 0) {
-            findPhoneBook[key] = {
-                'name': phoneBook[key]['name'],
-                'email': phoneBook[key]['email']
-            }
-            // console.log('нашел',key);
+    var findPhoneBook = [];
+    // узнаем в каком объекте находится искомоя строка
+    var usersArray = findInContactList(query);
+    for (var i=0; i<usersArray.length; i++) {
+        var phone = usersArray[i];
+        if (phoneBook[phone]['email'] == '') {
+            var userString = phoneBook[phone]['name'] + ', ' + phone;
+        } else {
+            var userString = phoneBook[phone]['name'] + ', ' + phone + ', ' + phoneBook[phone]['email'];
         }
+        findPhoneBook.push(userString);
     }
 
-    console.log('findPhoneBook', findPhoneBook)
+    // console.log('findPhoneBook', findPhoneBook)
+    return findPhoneBook.sort();
 };
 
 /**
