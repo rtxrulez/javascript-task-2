@@ -133,6 +133,17 @@ exports.importFromCsv = function (csv) {
     // Парсим csv
     // Добавляем в телефонную книгу
     // Либо обновляем, если запись с таким телефоном уже существует
-
-    return csv.split('\n').length;
+    var userArray;
+    var phone;
+    var userString = csv.split('\n');
+    for (var i=0; i<userString.length; i++) {
+        userArray = userString[i].split(';');
+        phone = userArray[1];
+        phoneBook[phone] = {
+            'name': userArray[0],
+            'email': userArray[2]
+        }
+    }
+    // return csv.split('\n').length;
+    return userString.length;
 };
